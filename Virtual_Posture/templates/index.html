@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Posture Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 400px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333333;
+            margin-top: 0;
+            font-size: 24px;
+        }
+
+        p {
+            color: #555555;
+            margin-top: 10px;
+        }
+
+        .position-dropdown {
+            margin-top: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #cccccc;
+            background-color: #f9f9f9;
+            font-size: 16px;
+            color: #333333;
+            cursor: pointer;
+        }
+
+        .button-container {
+            margin-top: 20px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-right: 10px;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        video {
+            width: 100%;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        #postureMessage {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        #analysisPanel {
+    display: none;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-top: 20px;
+}
+
+        #analysisPanel h2 {
+            color: #333333;
+            font-size: 20px;
+            margin-top: 0;
+        }
+
+#analysisPanel p {
+    color: #555555;
+    font-size: 16px;
+    margin-top: 10px;
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Virtual Posture Assistant</h1>
+        <p>Select the appropriate position and Record</p>
+        <div class="position-dropdown">
+            <label for="position">Select Position:</label>
+            <select id="position" name="position">
+                <option value="sitting">Sitting</option>
+                <option value="standing">Standing</option>
+                <option value="sleeping">Sleeping</option>
+            </select>
+        </div>
+        <div class="button-container">
+            <button id="startButton">Start Recording</button>
+            <button id="stopButton" disabled>Stop Recording</button>
+        </div>
+        <video id="videoElement" autoplay controls muted playsinline></video>
+       
+    </div>
+
+    <div id="analysisPanel" style="display: none;">
+        <h2>Video Analysis</h2>
+        <p id="postureMessage"></p> 
+        <p id="videoStats"></p>
+    </div>
+
+    <script type="module">
+           let mediaRecorder;
+        let recordedChunks = [];
+
+        const startButton = document.getElementById('startButton');
+        const stopButton = document.getElementById('stopButton');
+        const videoElement = document.getElementById('videoElement');
+
+        startButton.addEventListener('click', () => {
+            startRecording();
+            startButton.disabled = true;
+            stopButton.disabled = false;
+        });
+
+        stopButton.addEventListener('click', () => {
+            stopRecording();
+            startButton.disabled = false;
+            stopButton.disabled = true;
+        });
+
+        async function startRecording() {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            videoElement.srcObject = stream;
+            mediaRecorder = new MediaRecorder(stream);
+
+            mediaRecorder.ondataavailable = handleDataAvailable;
+            mediaRecorder.start();
+        }
+
+        function handleDataAvailable(event) {
+            if (event.data.size > 0) {
+                recordedChunks.push(event.data);
+            }
+        }
+
+        
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-analytics.js";
+  import { getStorage, ref, uploadBytes } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyAvarD3V51C0wWkfINgTVjiAjp99TmriQI",
+    authDomain: "final-project-a4d4b.firebaseapp.com",
+    projectId: "final-project-a4d4b",
+    storageBucket: "final-project-a4d4b.appspot.com",
+    messagingSenderId: "431896785787",
+    appId: "1:431896785787:web:ece847b3a22811672543de",
+    measurementId: "G-9P12YWXQYM"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const storage = getStorage(app);
+
+     
+
+      
+
+        async function stopRecording() {
+            mediaRecorder.addEventListener('dataavailable', function(e) {
+    if (e.data.size > 0) {
+        recordedChunks.push(e.data);
+    }
+
+    if(mediaRecorder.state == 'inactive') {
+        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        videoElement.src = url;
+
+        const storageRef = ref(storage, 'videos/' + 'recorded-video.webm');
+            uploadBytes(storageRef, blob).then((snapshot) => {
+              console.log('Uploaded a blob or file!');
+            });
+
+        videoElement.onloadedmetadata = async function() {
+            const posture = await analyzePosture(blob);
+            const postureMessageElement = document.getElementById('postureMessage');
+            postureMessageElement.textContent = `Posture: ${posture}`
+            // Reset recording
+            recordedChunks = [];
+
+            // Create download link
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'recorded-video.webm';
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }, 100);
+        }
+    }
+
+    
+            });
+
+            mediaRecorder.stop();
+            const analysisPanel = document.getElementById('analysisPanel');
+        const videoStatsElement = document.getElementById('videoStats');
+        videoStatsElement.textContent = `Video length: ${videoElement.duration} seconds`;
+        analysisPanel.style.display = 'block';
+ }
+
+        async function analyzePosture(videoBlob) {
+        // Perform posture analysis on the recorded video
+        // You can implement your posture analysis logic here
+        // For demonstration, return a random posture (good or bad)
+        const randomPosture = Math.random() < 0.5 ? 'Good' : 'Bad';
+        return randomPosture;
+    }
+    </script>
+</body>
+</html>
